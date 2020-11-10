@@ -1,4 +1,4 @@
-package com.android.example.AboutMe
+package com.android.example.aboutMe
 
 import org.junit.Test
 
