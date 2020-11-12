@@ -7,11 +7,10 @@ import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import java.lang.Math.acos
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -30,9 +29,14 @@ class ShowLocation : AppCompatActivity() {
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 local = "longitude: " + location?.longitude + " - Latitude: " + location?.latitude
                 val location = findViewById<TextView>(R.id.location)
-                val p1 = Coord(38.8901100,-77.0319900)
-                val p2 = Coord(38.890245, -77.03199)
-                val distance = distance(p1, p2)
+
+                val p1 = Location("")
+                p1.latitude = 38.8901100
+                p1.longitude = 38.8901100
+                val p2 = Location("")
+                p2.latitude = 38.890245
+                p2.longitude = -77.03199
+                val distance = p1.distanceTo(p2)
                 location.text = distance.toString()
             }
             fusedLocationClient.lastLocation.addOnFailureListener {
@@ -48,8 +52,15 @@ class ShowLocation : AppCompatActivity() {
 
     fun distance(p1 : Coord, p2 : Coord) : Double{
         val  R = 6372.795477598
-        return R * acos(sin(p1.lat) * sin(p2.lat) + cos(p1.lat) * cos(p2.lat) * cos(p1.lon - p2.lon)) * 1000
+        return R * acos(sin(p1.latR) * sin(p2.latR) + cos(p1.latR) * cos(p2.latR) * cos(p1.lonR - p2.lonR)) * 1000
     }
 
-    data class Coord(val lat : Double, val lon : Double){ }
+    data class Coord(val lat : Double, val lon : Double) {
+        var latR: Double
+        var lonR: Double
+        init{
+            latR = lat / (PI/360.toDouble())
+            lonR = lon / (PI/360.toDouble())
+        }
+    }
 }
