@@ -30,12 +30,12 @@ class ShowLocation : AppCompatActivity() {
                 local = "longitude: " + location?.longitude + " - Latitude: " + location?.latitude
                 val location = findViewById<TextView>(R.id.location)
 
-                val p1 = Location("")
-                p1.latitude = 38.8901100
-                p1.longitude = 38.8901100
-                val p2 = Location("")
-                p2.latitude = 38.890245
-                p2.longitude = -77.03199
+                val p1 = Location("point A")
+                p1.latitude = -8.0395008
+                p1.longitude = -34.9072609
+                val p2 = Location("point B")
+                p2.latitude = -8.0393597
+                p2.longitude = -34.9072954
                 val distance = p1.distanceTo(p2)
                 location.text = distance.toString()
             }
