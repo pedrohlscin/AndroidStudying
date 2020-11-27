@@ -1,9 +1,6 @@
 package com.pedroso.beelog.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.pedroso.beelog.database.data.Location
 import kotlinx.coroutines.flow.Flow
 
@@ -14,4 +11,7 @@ interface LocationDao {
 
     @Query("SELECT * FROM location_table")
     fun loadAllLocations(): Flow<List<Location>>
+
+    @Query("Delete from location_table")
+    suspend fun deleteAll()
 }
