@@ -46,21 +46,7 @@ class ShowLocation : AppCompatActivity() {
             if(shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)){
                 Toast.makeText(this, "Location Permission Needed!", Toast.LENGTH_SHORT).show()
             }
-            requestPermissions(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_PERMISSIONS_REQUEST_FINE_LOCATION)
-        }
-    }
-
-    fun distance(p1 : Coord, p2 : Coord) : Double{
-        val  R = 6372.795477598
-        return R * acos(sin(p1.latR) * sin(p2.latR) + cos(p1.latR) * cos(p2.latR) * cos(p1.lonR - p2.lonR)) * 1000
-    }
-
-    data class Coord(val lat : Double, val lon : Double) {
-        var latR: Double
-        var lonR: Double
-        init{
-            latR = lat / (PI/360.toDouble())
-            lonR = lon / (PI/360.toDouble())
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), MY_PERMISSIONS_REQUEST_FINE_LOCATION)
         }
     }
 }

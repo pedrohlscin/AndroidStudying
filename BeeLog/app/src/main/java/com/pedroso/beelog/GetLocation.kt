@@ -4,18 +4,28 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.pedroso.beelog.database.room.BeeLogRoomDatabase
+import com.pedroso.beelog.database.room.BeeLogRoomDatabase_Impl
 import com.pedroso.beelog.viewmodel.LocationViewModel
 import com.pedroso.beelog.viewmodel.LocationViewModelFactory
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class GetLocation(appContext: Context, workerParameters: WorkerParameters) : Worker(appContext, workerParameters) {
-    private val locationViewModel: LocationViewModel by viewModels{
-        LocationViewModelFactory((application as LocationsApplication).repository)
-    }
+
+//    private val Loca
+
+    private val locationViewModel: LocationViewModel = LocationViewModel((applicationContext as LocationsApplication).repository);
+
+//    {
+//        LocationViewModelFactory((application as LocationsApplication).repository)
+//    }
 
     override fun doWork(): Result {
         getAndSaveLocation()
@@ -29,7 +39,11 @@ class GetLocation(appContext: Context, workerParameters: WorkerParameters) : Wor
             fusedLocationClient = LocationServices.getFusedLocationProviderClient((applicationContext))
             var local: String? = null
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-
+                Log.d("LOCATION", "aeee ${location}")
+                val locationDao = BeeLogRoomDatabase.getDatabase(applicationContext, GlobalScope).locationDao()
+                GlobalScope.launch {
+                    locationDao.insert(com.pedroso.beelog.database.data.Location(0, location!!.latitude, location!!.longitude))
+                }
             }
         }
     }

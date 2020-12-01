@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.pedroso.beelog.database.data.Location
 
-class LocationListAdapter : ListAdapter<Location, LocationListAdapter.LocationViewHolder>(WordsComparator()) {
+class LocationListAdapter : ListAdapter<Location, LocationListAdapter.LocationViewHolder>(LocationsComparator()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationViewHolder {
         return LocationViewHolder.create(parent)
@@ -21,10 +21,10 @@ class LocationListAdapter : ListAdapter<Location, LocationListAdapter.LocationVi
     }
 
     class LocationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val wordItemView: TextView = itemView.findViewById(R.id.textView)
+        private val locationItemView: TextView = itemView.findViewById(R.id.textView)
 
         fun bind(text: String?) {
-            wordItemView.text = text
+            locationItemView.text = text
         }
 
         companion object {
@@ -36,7 +36,7 @@ class LocationListAdapter : ListAdapter<Location, LocationListAdapter.LocationVi
         }
     }
 
-    class WordsComparator : DiffUtil.ItemCallback<Location>() {
+    class LocationsComparator : DiffUtil.ItemCallback<Location>() {
         override fun areItemsTheSame(oldItem: Location, newItem: Location): Boolean {
             return oldItem === newItem
         }
