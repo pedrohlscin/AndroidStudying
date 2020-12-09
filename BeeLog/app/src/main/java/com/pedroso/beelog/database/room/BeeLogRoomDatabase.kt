@@ -44,9 +44,9 @@ public abstract class BeeLogRoomDatabase : RoomDatabase() {
                     locationDao.deleteAll()
 
                     // Add sample words.
-                    var location = Location(1, 1.21, 1.22)
+                    var location = Location(1.21, 1.22)
                     locationDao.insert(location)
-                    var location2 = Location(2, 1.23, 1.24)
+                    var location2 = Location(1.23, 1.24)
                     locationDao.insert(location2)
                 }
             }

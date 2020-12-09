@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             intentData?.getStringExtra(NewLocationActivity.EXTRA_REPLY)?.let { reply ->
                 var lat : String = reply.split(';')[0]
                 var lon : String = reply.split(';')[1]
-                val location = Location(Random.nextLong(), lat as Double,  lon as Double)
+                val location = Location(lat as Double,  lon as Double)
                 locationViewModel.insert(location)
             }
         } else {

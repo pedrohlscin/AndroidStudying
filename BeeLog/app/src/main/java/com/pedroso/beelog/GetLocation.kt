@@ -21,7 +21,7 @@ class GetLocation(appContext: Context, workerParameters: WorkerParameters) : Wor
 
 //    private val Loca
 
-    private val locationViewModel: LocationViewModel = LocationViewModel((applicationContext as LocationsApplication).repository);
+    private val repository = (applicationContext as LocationsApplication).repository
 
 //    {
 //        LocationViewModelFactory((application as LocationsApplication).repository)
@@ -40,9 +40,8 @@ class GetLocation(appContext: Context, workerParameters: WorkerParameters) : Wor
             var local: String? = null
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 Log.d("LOCATION", "aeee ${location}")
-                val locationDao = BeeLogRoomDatabase.getDatabase(applicationContext, GlobalScope).locationDao()
                 GlobalScope.launch {
-                    locationDao.insert(com.pedroso.beelog.database.data.Location(0, location!!.latitude, location!!.longitude))
+                    repository.insert(com.pedroso.beelog.database.data.Location(latitude = location!!.latitude, longitude =  location!!.longitude))
                 }
             }
         }

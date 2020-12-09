@@ -44,7 +44,7 @@ class LocationListAdapter : ListAdapter<Location, LocationListAdapter.LocationVi
         }
 
         override fun areContentsTheSame(oldItem: Location, newItem: Location): Boolean {
-            return oldItem.longitude == newItem.longitude && oldItem.latitude == newItem.latitude
+            return oldItem.id == newItem.id && oldItem.longitude == newItem.longitude && oldItem.latitude == newItem.latitude
         }
     }
 }
