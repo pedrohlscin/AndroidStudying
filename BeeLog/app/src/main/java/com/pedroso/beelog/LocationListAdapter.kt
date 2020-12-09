@@ -17,20 +17,22 @@ class LocationListAdapter : ListAdapter<Location, LocationListAdapter.LocationVi
 
     override fun onBindViewHolder(holder: LocationViewHolder, position: Int) {
         val current = getItem(position)
-        holder.bind(current.latitude.toString())
+        holder.bind(current.longitude.toString(), current.latitude.toString())
     }
 
     class LocationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val locationItemView: TextView = itemView.findViewById(R.id.textView)
+        private val latitudeItemView: TextView = itemView.findViewById(R.id.textViewLatitude)
+        private val longitudeItemView: TextView = itemView.findViewById(R.id.textViewLongitude)
 
-        fun bind(text: String?) {
-            locationItemView.text = text
+        fun bind(longitude: String?, latitude: String? ) {
+            latitudeItemView.text = latitude
+            longitudeItemView.text = longitude
         }
 
         companion object {
             fun create(parent: ViewGroup): LocationViewHolder {
                 val view: View = LayoutInflater.from(parent.context)
-                        .inflate(R.layout.recyclerview_item, parent, false)
+                    .inflate(R.layout.recyclerview_item, parent, false)
                 return LocationViewHolder(view)
             }
         }

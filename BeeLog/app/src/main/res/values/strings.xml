@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">BeeLog</string>
+    <string name="add_location">Add Location</string>
+    <string name="button_save">Save</string>
+    <string name="empty_not_saved">Location not saved because it is empty.</string>
+    <string name="hint_location_longitude">longitude</string>
+    <string name="hint_location_latitude">latitude</string>
+    <string name="add_word">Adicionar Location</string>
 </resources>

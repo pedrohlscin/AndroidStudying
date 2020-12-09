@@ -18,12 +18,14 @@ public abstract class BeeLogRoomDatabase : RoomDatabase() {
     companion object{
         @Volatile
         private var INSTANCE: BeeLogRoomDatabase? = null
+
         fun getDatabase(context: Context, scope : CoroutineScope): BeeLogRoomDatabase{
             return INSTANCE ?: synchronized(this){
                 val instance = Room.databaseBuilder(
                     context.applicationContext, BeeLogRoomDatabase::class.java,
                     "beelog_database"
                 ).fallbackToDestructiveMigration()
+                    .addCallback(LocationDatabaseCallback(scope))
                 .build()
                 INSTANCE = instance
                 instance
@@ -44,8 +46,8 @@ public abstract class BeeLogRoomDatabase : RoomDatabase() {
                     // Add sample words.
                     var location = Location(1, 1.21, 1.22)
                     locationDao.insert(location)
-                    location = Location(2, 1.23, 1.24)
-                    locationDao.insert(location)
+                    var location2 = Location(2, 1.23, 1.24)
+                    locationDao.insert(location2)
                 }
             }
         }
