@@ -1,13 +1,14 @@
 package com.pedroso.beelog
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.provider.SyncStateContract.Helpers.insert
+import android.os.Looper
+import android.util.Log
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -15,18 +16,26 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.WorkerParameters
+import com.google.android.gms.location.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.pedroso.beelog.database.data.Location
 import com.pedroso.beelog.viewmodel.LocationViewModel
 import com.pedroso.beelog.viewmodel.LocationViewModelFactory
-import java.util.concurrent.TimeUnit
-import kotlin.random.Random
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.util.*
+import java.time.LocalDateTime
+
 
 class MainActivity : AppCompatActivity() {
 
+    var locations = mutableListOf<Location>()
+
     private val newLocationActivityRequestCode = 1
-    private val locationViewModel : LocationViewModel by viewModels{
+    var locationRequest: LocationRequest? = null
+
+    private val locationViewModel: LocationViewModel by viewModels {
         LocationViewModelFactory((application as LocationsApplication).repository)
     }
 
@@ -39,66 +48,110 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         locationViewModel.allLocations.observe(this) { locations ->
-            locations.let { adapter.submitList(it) }
+            locations.let {
+                adapter.submitList(it)
+            }
         }
 
-        val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener {
-            val intent = Intent(this@MainActivity, NewLocationActivity::class.java)
-            startActivityForResult(intent, newLocationActivityRequestCode)
-        }
+        val hasAccessCoarseLocation = ContextCompat.checkSelfPermission(
+            applicationContext,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
+        val hasAccessFineLocation = ContextCompat.checkSelfPermission(
+            applicationContext,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
-        if (ContextCompat.checkSelfPermission(
-                applicationContext,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            startLocationService()
+        if (hasAccessCoarseLocation && hasAccessFineLocation) {
+//            startLocationService()
+            startLocationUpdates()
         } else {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 10)
         }
 
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intentData: Intent?) {
-        super.onActivityResult(requestCode, resultCode, intentData)
+    @SuppressLint("MissingPermission")
+    fun startLocationUpdates() {
+        locationRequest = LocationRequest().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = 1000
+            fastestInterval = 500
+        }
 
-        if (requestCode == newLocationActivityRequestCode && resultCode == Activity.RESULT_OK) {
-            intentData?.getStringExtra(NewLocationActivity.EXTRA_REPLY)?.let { reply ->
-                var lat : String = reply.split(';')[0]
-                var lon : String = reply.split(';')[1]
-                val location = Location(lat as Double,  lon as Double)
-                locationViewModel.insert(location)
+        val locationSettings = LocationSettingsRequest.Builder().apply {
+            locationRequest?.let {
+                addLocationRequest(it)
             }
-        } else {
-            Toast.makeText(
-                applicationContext,
-                R.string.empty_not_saved,
-                Toast.LENGTH_LONG
-            ).show()
+        }.build()
+
+        val settingsClient = LocationServices.getSettingsClient(this).apply {
+            checkLocationSettings(locationSettings)
+        }
+
+        FusedLocationProviderClient(this).requestLocationUpdates(locationRequest, object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    onLocationChanged(locationResult.lastLocation)
+                }
+            },
+            Looper.myLooper()
+        )
+    }
+
+    private fun onLocationChanged(lastLocation: android.location.Location?) {
+        Log.d("LOCATION", "aeee ${lastLocation}")
+
+        locations.add(
+            Location(lastLocation!!.latitude, lastLocation!!.longitude, Calendar.getInstance().time)
+        )
+        checkIfItsAValidLocation()
+
+    }
+
+    private fun checkIfItsAValidLocation() {
+        var itemsToRemove = mutableListOf<Location>()
+        val listIterator = locations.listIterator()
+        for(loc in locations){
+            var locTemp = getLocation(loc)
+            val nextLocation = listIterator.next()
+            var nextLoc = getLocation(nextLocation)
+            if(locTemp.distanceTo(nextLoc) < 30 && ((loc.date.time - nextLocation.date.time) / 1000 / 60) <= 15 ){
+                itemsToRemove.add(loc)
+                if(itemsToRemove.size >= 15){
+                    locationViewModel.insert(loc)
+                    locations.removeAll(itemsToRemove)
+                    itemsToRemove.clear()
+                }
+            }else{
+                locations.removeAll(itemsToRemove)
+                itemsToRemove.clear()
+            }
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 10 && grantResults.size == 1) {
-            startLocationService()
-        } else {
-            Toast.makeText(this, "Para o app funcionar corretamente é preciso compartilhar sua localização", Toast.LENGTH_SHORT).show()
-        }
-
+    private fun getLocation(loc: Location): android.location.Location {
+        val temp = android.location.Location("")
+        temp.latitude = loc.latitude
+        temp.longitude = loc.longitude
+        return temp
     }
 
-    fun startLocationService() {
-        //inicializar service por aqui
-        //antes verificar se ele já não foi inicializado
-        val locationWorkRequest = PeriodicWorkRequestBuilder<GetLocation>(5, TimeUnit.SECONDS).build()
-        WorkManager.getInstance(applicationContext).enqueue(locationWorkRequest)
-    }
-
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<out String>,
+//        grantResults: IntArray
+//    ) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//        if (requestCode == 10 && grantResults.size == 1) {
+//            startLocationService()
+//        } else {
+//            Toast.makeText(
+//                this,
+//                "Para o app funcionar corretamente é preciso compartilhar sua localização",
+//                Toast.LENGTH_SHORT
+//            ).show()
+//        }
+//
+//    }
 }

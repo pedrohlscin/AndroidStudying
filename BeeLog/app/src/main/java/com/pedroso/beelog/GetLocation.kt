@@ -47,12 +47,12 @@ class GetLocation(appContext: Context, workerParameters: WorkerParameters) : Wor
             fusedLocationClient!!.lastLocation.addOnSuccessListener { location: Location? ->
                 Log.d("LOCATION", "aeee ${location}")
                 GlobalScope.launch {
-                    repository.insert(
-                        com.pedroso.beelog.database.data.Location(
-                            latitude = location!!.latitude,
-                            longitude = location!!.longitude
-                        )
-                    )
+//                    repository.insert(
+//                        com.pedroso.beelog.database.data.Location(
+//                            latitude = location!!.latitude,
+//                            longitude = location!!.longitude
+//                        )
+//                    )
                 }
             }
         }

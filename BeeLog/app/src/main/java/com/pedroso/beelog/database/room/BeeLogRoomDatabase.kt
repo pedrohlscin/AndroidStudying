@@ -4,13 +4,16 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.pedroso.beelog.database.converters.Converters
 import com.pedroso.beelog.database.data.Location
 import com.pedroso.beelog.database.dao.LocationDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@Database(entities = arrayOf(Location::class), version = 1, exportSchema = false)
+@Database(entities = arrayOf(Location::class), version = 2, exportSchema = false)
+@TypeConverters(Converters::class)
 public abstract class BeeLogRoomDatabase : RoomDatabase() {
 
     abstract fun locationDao(): LocationDao
@@ -38,16 +41,8 @@ public abstract class BeeLogRoomDatabase : RoomDatabase() {
             super.onCreate(db)
             INSTANCE?.let { database ->
                 scope.launch {
-                    var locationDao = database.locationDao()
-
                     // Delete all content here.
-                    locationDao.deleteAll()
-
-                    // Add sample words.
-                    var location = Location(1.21, 1.22)
-                    locationDao.insert(location)
-                    var location2 = Location(1.23, 1.24)
-                    locationDao.insert(location2)
+                    database.locationDao().deleteAll()
                 }
             }
         }
